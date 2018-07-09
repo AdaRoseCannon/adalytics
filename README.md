@@ -15,6 +15,6 @@ Steps:
 * Paste it onto websites you want to track
 * Refresh the page to see page views.
 
-The counter looks like this: ![counter](https://ada-analytics.glitch.me/counter.png?color=black)
+The counter looks like this: ![counter](https://adalytics-live.glitch.me/counter.png?color=black)
 
 &copy; MIT License, Ada Rose Cannon
