@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Page Analytics</title>
+    <script>if (location.protocol !== "https:") location.protocol = "https:";</script>
+    <meta name="description" content="A cool thing made with Glitch">
+    <link id="favicon" rel="icon" href="https://glitch.com/edit/favicon-app.ico" type="image/x-icon">
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- import the webpage's stylesheet -->
+    <link rel="stylesheet" href="/style.css">
+    
+  </head>
+  <body>
+    <header>
+      <h1>
+        My Analytics
+      </h1>
+      <p>
+        To include the analytics in your site at the following tag to your page:
+        <pre><code><script>document.write('&ltimg src="' + document.location.origin + '/counter.png?color=black" alt="" style="vertical-align: bottom;" aria-hidden="true"&gt;');</script></code></pre>
+        Counter: <script>document.write('<img src="' + document.location.origin + '/counter.png?color=teal" alt="" aria-hidden="true" style="vertical-align: bottom;">');</script>
+      </p>
+    </header>
+
+    <main>
+      <!-- main -->
+    </main>
+
+    <!-- include the Glitch button to show what the webpage is about and
+          to make it easier for folks to view source and remix -->
+    <div class="glitchButton" style="position:fixed;top:20px;right:20px;"></div>
+    <script src="https://button.glitch.me/button.js"></script>
+  
+    <footer>
+      &copy; Ada Rose Cannon, source code is MIT Licensed. <a href="https://glitch.com/~adalytics-live" target="_blank">Source</a>
+    </footer>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>
