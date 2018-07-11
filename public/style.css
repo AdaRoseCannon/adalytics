@@ -77,3 +77,21 @@ footer {
 thead, label {
  font-weight: bold; 
 }
+
+thead tr td {
+  border-bottom: 1px solid grey;  
+}
+
+tr {
+  transition: background ease 500ms;
+  transition-delay: 1000ms;
+}
+
+tr:nth-child(even) {
+  background: #eee;
+}
+
+tr.highlighted {
+  background: palegoldenrod;
+  transition-delay: 0ms;
+}

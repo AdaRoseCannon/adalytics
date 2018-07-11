@@ -22,6 +22,8 @@ let reg = new RegExp('');
 (async function () {
   const data = await fetch('./data.json').then(r => r.json());
   const socket = io(location.origin);
+  
+  let lastupdated = '';
 
   function makeTable() {
     try {
@@ -32,7 +34,7 @@ let reg = new RegExp('');
       data
       .filter(a => a.url.match(reg))
       .sort((a,b) => b.counter - a.counter)
-    )}`;
+    , lastupdated)}`;
   }
 
   socket.on('connect', function(){
@@ -40,6 +42,7 @@ let reg = new RegExp('');
   });
   
   socket.on('update', function(newRowData){
+    lastupdated = newRowData.url;
     const result = data.find(row => row.url === newRowData.url);
     queue.push(function () {
       if (result) {

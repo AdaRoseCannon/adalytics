@@ -2,13 +2,13 @@ import {wire} from '/node_modules/viperhtml/index.js';
 
 const tableState = {};
 
-const row = data => wire(tableState, ':' + encodeURIComponent(data.url))`
-  <tr>
+const row = (data, lastupdated) => wire(tableState, ':' + encodeURIComponent(data.url))`
+  <tr class="${data.url === lastupdated ? 'highlighted' : ''}">
     <td>${data.url}</td>
     <td>${data.counter}</td>
   </tr>`;
 
-const table = rows => wire(tableState, ':table')`
+const table = (rows, lastupdated) => wire(tableState, ':table')`
   <table>
     <thead>
       <tr>
@@ -17,7 +17,7 @@ const table = rows => wire(tableState, ':table')`
       </tr>
     </thead>
     <tbody>
-      ${rows.map(r => row(r))}
+      ${rows.map(r => row(r, lastupdated))}
     </tbody>
   </table>
 `;
