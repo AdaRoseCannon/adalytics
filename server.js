@@ -48,7 +48,7 @@ function nocache(req, res, next) {
 }
 
 app.get('/counter.png', nocache, function(request, response) {
-    const url = request.header('Referer');
+    const url = request.header('Referer') || request.query.fallback;
     
     const urlToSave = url ? url.split("?")[0] : 'unknown';
   
