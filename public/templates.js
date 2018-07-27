@@ -23,21 +23,34 @@ const row = (data, lastupdated) => wire(tableState, ':' + encodeURIComponent(dat
   }}>
     <td><span style=${{
       color: urlToHSL(data.url, '70%', '70%')
-    }}>⬤</span> <a href="${data.url}" target="_blank" rel="nofollow">${data.url}</a></td>
+    }}>⬤</span> <a href="${data.url.match(/^https?:/) ? data.url : ''}" target="_blank" rel="nofollow">${data.url}</a></td>
     <td>${data.counter}</td>
   </tr>`;
 
-const table = (rows, lastupdated) => wire(tableState, ':table')`
+const table = (dbName, rows, lastupdated) => wire(tableState, ':table')`
   <table>
     <thead>
+      <tr>
+        <td span="2">
+          <a class="button" href="/" disabled="${dbName === 'Analytics'}">All Time</a>
+          <a class="button" href="/?db=Last30" disabled="${dbName === 'Last30'}">This Month</a>
+          <a class="button" href="/?db=LastDay" disabled="${dbName === 'LastDay'}">Today</a>
+        </td>
+      </tr>
       <tr>
         <td>URL</td>
         <td>Count</td>
       </tr>
     </thead>
     <tbody>
-      ${rows.map(r => row(r, lastupdated))}
+      ${rows.filter(r => r.url !== 'global-counter').map(r => row(r, lastupdated))}
     </tbody>
+  <tfoot>
+  </tfoot>
+    <td></td>
+    <td style="border-top: 2px solid black;">
+       ${rows.filter(r => r.url !== 'global-counter').reduce((a,b) => a + b.counter, 0)}
+    </td>
   </table>
 `;
 

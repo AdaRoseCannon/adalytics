@@ -47,25 +47,36 @@ input {
   font-size: 16px;
 }
 
-button {
+button, a.button {
   font-size: 16px;
   border-radius: 3px;
   background-color: lightgrey;
   border: 1px solid grey;
   box-shadow: 2px 2px teal;
   cursor: pointer;
+  
+  text-decoration: none;
+  font-weight: normal;
+  padding: 0.2em;
+  display: inline-block;
 }
 
-button:hover {
+button:hover, a.button:hover {
+  text-decoration: none;
   background-color: yellow;
 }
 
-button:active {
+button:active, a.button:active {
   box-shadow: none;
 }
 
 li {
   margin-bottom: 5px;
+}
+
+a[disabled="true"], a[disabled=""] {
+  filter: contrast(0.5) brightness(1.3);
+  pointer-events: none;
 }
 
 footer {
@@ -78,7 +89,7 @@ thead, label {
  font-weight: bold; 
 }
 
-thead tr td {
+thead tr:last-child td {
   border-bottom: 1px solid grey;  
 }
 
@@ -87,11 +98,11 @@ tr {
   transition-delay: 1000ms;
 }
 
-tr:nth-child(even) {
+tbody>tr:nth-child(even) {
   background: #eee;
 }
 
-tr.highlighted {
+tbody>tr.highlighted {
   background: palegoldenrod;
   transition-delay: 0ms;
 }

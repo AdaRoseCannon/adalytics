@@ -20,9 +20,10 @@ const queue = [];
 
 let reg = new RegExp('');
 (async function () {
-  const data = await fetch('./data.json').then(r => r.json());
-  const socket = io(location.origin);
   
+  const socket = io(location.origin);
+  let dbName;
+  let data;
   let lastupdated = '';
 
   function makeTable() {
@@ -30,13 +31,33 @@ let reg = new RegExp('');
       reg = new RegExp(window.regex.value, 'i');
     } catch (e) {}
     render`
-    ${table(
+    ${table(dbName, 
       data
       .filter(a => a.url.match(reg))
       .sort((a,b) => b.counter - a.counter)
-    , lastupdated)}`;
+    , lastupdated, {refreshAllData})}`;
+  }
+  
+  async function refreshAllData(dbNameIn) {
+    switch(dbNameIn) {
+      case 'Analytics':
+        data = await fetch('./data.json').then(r => r.json());
+        break;
+      case 'Last30':
+        data = await fetch('./since-last-month.json').then(r => r.json());
+        break;
+      case 'LastDay':
+        data = await fetch('./since-yesterday.json').then(r => r.json());
+        break;
+      default:
+        throw Error('Invalid DB ' + dbNameIn);
+    }
+    dbName = dbNameIn;
+    makeTable();
   }
 
+  await refreshAllData(new URLSearchParams(location.search).get('db') || 'Analytics');
+  
   socket.on('connect', function(){
     console.log('connected');
   });
@@ -46,9 +67,12 @@ let reg = new RegExp('');
     const result = data.find(row => row.url === newRowData.url);
     queue.push(function () {
       if (result) {
-        result.counter = newRowData.counter;
+        result.counter = newRowData.urlCounter[dbName];
       } else {
-        data.push(newRowData);
+        data.push({
+          url: newRowData.url,
+          counter: newRowData.urlCounter[dbName]
+        });
       }
       makeTable();
     });
@@ -59,5 +83,31 @@ let reg = new RegExp('');
     makeTable();
   });
   
-  makeTable();
+  function changeDBFromURL(urlIn) {
+    const url = new URL(urlIn);
+    if (url.pathname === '/') {
+      const query = new URLSearchParams(url.search);
+      let db = query.get('db') || 'Analytics';
+      refreshAllData(db);
+      return db;
+    }
+  }
+  
+  window.addEventListener('click', e => {
+    if (e.target.tagName === 'A') {
+      if (e.target.href === location.href) {
+          return e.preventDefault();
+      }
+      const newDB = changeDBFromURL(e.target.href);
+      if (newDB) {
+        e.preventDefault();
+        history.pushState({}, newDB, e.target.href);
+      }
+    }
+  });
+  
+  window.addEventListener('popstate', function () {
+    changeDBFromURL(document.location.toString());
+  });
+  
 }());
