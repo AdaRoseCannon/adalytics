@@ -25,12 +25,11 @@ sqlite.open(dbFile, { Promise })
 .then(async function (db) {
   
   // await db.run(`DROP TABLE MiscInts`); createMiscIntsTable ();
-  // createMiscIntsTable();
-  
+  createMiscIntsTable();
   //await db.run(`DROP TABLE DayCountLog`);
-  // createDayCountLogTable ();
+  createDayCountLogTable ();
   // await db.run(`DROP TABLE MonthCountLog`);
-  // createMonthCountLogTable ();
+  createMonthCountLogTable ();
   // await db.run(`INSERT INTO DayCountLog VALUES (${Math.floor(Date.now(0)/8.64e7) - 1}, 273)`);
   
   async function createDayCountLogTable() {
