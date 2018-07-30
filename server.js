@@ -35,7 +35,13 @@ sqlite.open(dbFile, { Promise })
     createDayCountLogTable(),
     createMonthCountLogTable(),
     createYesterdayCountLogTable(),
-  ]);
+  ]).catch(e => {
+     console.log('Error Starting', e);
+  });
+  
+  // Check for updating the tables
+  await resetLast30Days();
+  await resetLastDay();
   
   async function createDayCountLogTable() {
       const hasTable = await db.get(`SELECT name FROM sqlite_master WHERE type='table' AND name='DayCountLog'`);
@@ -72,8 +78,8 @@ sqlite.open(dbFile, { Promise })
       const hasTable = await db.get(`SELECT name FROM sqlite_master WHERE type='table' AND name='MiscInts'`);
       if (!hasTable) {
         await db.run(`CREATE TABLE MiscInts (
-          MonthNumber TEXT PRIMARY KEY,
-          count INTEGER DEFAULT 0
+          IntKey TEXT PRIMARY KEY,
+          value INTEGER DEFAULT 0
         )`);
         await db.run(`INSERT INTO MiscInts VALUES ("Last30Month", 0)`);
         await db.run(`INSERT INTO MiscInts VALUES ("LastDayDay", 0)`);
@@ -139,10 +145,6 @@ sqlite.open(dbFile, { Promise })
         await db.run(`UPDATE MiscInts SET value = ${currentDay} WHERE IntKey="LastDayDay"`);
       }
   }
-  
-  // Check for updating the tables
-  await resetLast30Days();
-  await resetLastDay();
 
   // Check if table file exists, or create new one for first load.
   if (!exists) {
