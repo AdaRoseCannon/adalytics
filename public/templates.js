@@ -34,6 +34,7 @@ const table = (dbName, rows, lastupdated) => wire(tableState, ':table')`
         <td span="2">
           <a class="button" href="/" disabled="${dbName === 'Analytics'}">All Time</a>
           <a class="button" href="/?db=Last30" disabled="${dbName === 'Last30'}">This Month</a>
+          <a class="button" href="/?db=YesterdayLog" disabled="${dbName === 'Yesterday'}">Yesterday</a>
           <a class="button" href="/?db=LastDay" disabled="${dbName === 'LastDay'}">Today</a>
         </td>
       </tr>

@@ -49,6 +49,9 @@ let reg = new RegExp('');
       case 'LastDay':
         data = await fetch('./since-yesterday.json').then(r => r.json());
         break;
+      case 'YesterdayLog':
+        data = await fetch('./yesterday.json').then(r => r.json());
+        break;
       default:
         throw Error('Invalid DB ' + dbNameIn);
     }
@@ -63,6 +66,7 @@ let reg = new RegExp('');
   });
   
   socket.on('update', function(newRowData){
+    if (dbName === 'YesterdayLog') return;
     lastupdated = newRowData.url;
     const result = data.find(row => row.url === newRowData.url);
     queue.push(function () {

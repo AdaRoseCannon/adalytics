@@ -6,7 +6,7 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import text2png from 'text2png';
 import fs from 'fs';
-import viperHTML from 'viperhtml';
+import viperHTML, {wire} from 'viperhtml';
 import {table} from './public/templates.js';
 import http from 'http';
 import socketio from 'socket.io';
@@ -24,13 +24,18 @@ var exists = fs.existsSync(dbFile);
 sqlite.open(dbFile, { Promise })
 .then(async function (db) {
   
-  // await db.run(`DROP TABLE MiscInts`); createMiscIntsTable ();
-  createMiscIntsTable();
-  //await db.run(`DROP TABLE DayCountLog`);
-  createDayCountLogTable ();
+  
+  // await db.run(`DROP TABLE MiscInts`);
+  // await db.run(`DROP TABLE DayCountLog`);
   // await db.run(`DROP TABLE MonthCountLog`);
-  createMonthCountLogTable ();
-  // await db.run(`INSERT INTO DayCountLog VALUES (${Math.floor(Date.now(0)/8.64e7) - 1}, 273)`);
+  // await db.run(`DROP TABLE YesterdayLog`);
+  
+  await Promise.all([
+    createMiscIntsTable(),
+    createDayCountLogTable(),
+    createMonthCountLogTable(),
+    createYesterdayCountLogTable(),
+  ]);
   
   async function createDayCountLogTable() {
       const hasTable = await db.get(`SELECT name FROM sqlite_master WHERE type='table' AND name='DayCountLog'`);
@@ -39,6 +44,17 @@ sqlite.open(dbFile, { Promise })
           DayNumber INTEGER PRIMARY KEY,
           value INTEGER DEFAULT 0
         )`);
+      }
+  }
+  
+  async function createYesterdayCountLogTable() {
+      const hasTable = await db.get(`SELECT name FROM sqlite_master WHERE type='table' AND name='YesterdayLog'`);
+      if (!hasTable) {
+        await db.run(`CREATE TABLE YesterdayLog (
+          url TEXT PRIMARY KEY,
+          counter INTEGER DEFAULT 0
+        )`);
+        await db.run(`INSERT INTO YesterdayLog VALUES ("global-counter", 0)`);
       }
   }
   
@@ -106,7 +122,12 @@ sqlite.open(dbFile, { Promise })
         if (hasTable) {
           const {counter: oldTotal} = await db.get(`SELECT counter from LastDay WHERE url="global-counter"`);
           await db.run(`INSERT INTO DayCountLog VALUES (${dayBeingRecorded}, ${oldTotal})`);
-          await db.run(`DROP TABLE LastDay`);
+          
+          // Get rid of the day before yesterdays Data
+          await db.run(`DROP TABLE YesterdayLog`);
+          
+          // Rename todays data to yesterday
+          await db.run(`ALTER TABLE LastDay RENAME TO YesterdayLog`);
         }
         
         // Recreate the table
@@ -195,7 +216,7 @@ sqlite.open(dbFile, { Promise })
   });
 
   
-  const indexFile = fs.readFileSync('./views/index.html', 'utf8').split('<!-- main -->');
+  const indexFile = fs.readFileSync('./views/index.html', 'utf8').split('<!-- split -->');
   app.get('/', async function (req, res) {
     res.set({ 'content-type': 'text/html; charset=utf-8' });
     
@@ -204,6 +225,7 @@ sqlite.open(dbFile, { Promise })
     if (
       !(dbName === 'Analytics' || 
       dbName === 'Last30' || 
+      dbName === 'YesterdayLog' || 
       dbName === 'LastDay')
     ) {
       return res.end('Not a valid DB');
@@ -212,8 +234,36 @@ sqlite.open(dbFile, { Promise })
     const rows = await db.all(`SELECT * from ${dbName} ORDER BY counter desc`);
     (asyncRender(chunk => res.write(chunk))`
         ${{html: indexFile[0]}}
-        ${table(dbName, rows)}
+        <svg style="dsiplay:block; width: 100%; height: 100px;">${wire({}, 'svg')`
+          ${db.all('SELECT * from DayCountLog ORDER BY DayNumber desc LIMIT 30')
+           .then(rows => {
+              const max = Math.max(rows.reduce((a,b) => Math.max(a,b.value),0),1);
+              const elements = rows.map((row, i) => wire(row, 'svg')`<g class="bar">
+                <rect width="3.33%" x="${(100 - 3.33 * i) + '%'}" y="${(80 * (1 - (row.value/max)))+'%'}" height="${(80 * (row.value/max)) + '%'}"></rect>
+                <text x="${(100 - 3.33 * i) + '%'}" y="${(80 * (1 - (row.value/max)))+'%'}" dy="1em" dx="1.666%" text-anchor="middle">${row.value}</text>
+              </g>`);
+              elements.unshift(wire({}, 'svg')`
+                <title id="title">A bar chart of users per day.</title>
+                <desc id="desc">Most users in the last 30 days was ${max}.</desc>
+                <text x="100%" y="80%" dy="1em" text-anchor="end">Yesterday</text>
+                <text x="0%" y="80%" dy="1em" text-anchor="start">30 Days Ago</text>
+                <style>
+                  rect {
+                    fill: #b3b3e6;
+                    stroke: #b3b3e6;
+                  }
+                  text {
+                    font-size:10px;
+                  }
+                </style>
+              `)
+              return elements;
+            })
+           }
+        `}</svg>
         ${{html: indexFile[1]}}
+        ${table(dbName, rows)}
+        ${{html: indexFile[2]}}
     `)
     .then(() => res.end());
   });
@@ -225,6 +275,11 @@ sqlite.open(dbFile, { Promise })
 
   app.get('/data.json', nocache, async function (request, response) {
     const rows = await db.all('SELECT * from Analytics ORDER BY counter desc');
+    response.json(rows);
+  });
+
+  app.get('/yesterday.json', nocache, async function (request, response) {
+    const rows = await db.all('SELECT * from YesterdayLog ORDER BY counter desc');
     response.json(rows);
   });
 
