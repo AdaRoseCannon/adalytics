@@ -15,6 +15,10 @@ Steps:
 * Paste it onto websites you want to track
 * Refresh the page to see page views.
 
+```html
+<img src="https://adalytics-live.glitch.me/counter.png?fallback=MY_WEBSITE&color=black" alt="" style="vertical-align: bottom;" aria-hidden="true">
+```
+
 The counter looks like this: ![counter](https://adalytics-live.glitch.me/counter.png?color=black&fallback=[Fallback]Adalytics%20Readme)
 
 &copy; MIT License, Ada Rose Cannon

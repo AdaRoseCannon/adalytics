@@ -241,14 +241,15 @@ sqlite.open(dbFile, { Promise })
            .then(rows => {
               const max = Math.max(rows.reduce((a,b) => Math.max(a,b.value),0),1);
               const elements = rows.map((row, i) => wire(row, 'svg')`<g class="bar">
-                <rect width="3.33%" x="${(100 - 3.33 * i) + '%'}" y="${(80 * (1 - (row.value/max)))+'%'}" height="${(80 * (row.value/max)) + '%'}"></rect>
-                <text x="${(100 - 3.33 * i) + '%'}" y="${(80 * (1 - (row.value/max)))+'%'}" dy="1em" dx="1.666%" text-anchor="middle">${row.value}</text>
+                <rect width="3.33%" x="${(100 - 3.33 * (i+1)) + '%'}" y="${(80 * (1 - (row.value/max)))+'%'}" height="${(80 * (row.value/max)) + '%'}"></rect>
+                <text x="${(100 - 3.33 * (i+1)) + '%'}" y="${Math.max(-1 + 80 * (1 - (row.value/max)), 12)+'%'}" dx="1.666%" text-anchor="middle">${row.value}</text>
               </g>`);
               elements.unshift(wire({}, 'svg')`
                 <title id="title">A bar chart of users per day.</title>
                 <desc id="desc">Most users in the last 30 days was ${max}.</desc>
-                <text x="100%" y="80%" dy="1em" text-anchor="end">Yesterday</text>
-                <text x="0%" y="80%" dy="1em" text-anchor="start">30 Days Ago</text>
+                <text x="100%" y="80%" dy="1.1em" text-anchor="end">Yesterday</text>
+                <text x="0%" y="80%" dy="1.1em" text-anchor="start">30 Days Ago</text>
+                <rect width="100%" x="0" y="80%" height="1" style="stroke: none;"></rect>
                 <style>
                   rect {
                     fill: #b3b3e6;
