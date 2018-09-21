@@ -275,6 +275,11 @@ sqlite.open(dbFile, { Promise })
     response.json(rows);
   });
 
+  app.get('/last-30-days-count.json', nocache, async function (request, response) {
+    const count = await db.get('SELECT SUM(value) as count from DayCountLog WHERE DayNumber > (SELECT MAX(DayNumber) from DayCountLog) - 30');
+    response.json(count);
+  });
+
   app.get('/data.json', nocache, async function (request, response) {
     const rows = await db.all('SELECT * from Analytics ORDER BY counter desc');
     response.json(rows);
